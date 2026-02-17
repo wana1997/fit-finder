@@ -243,39 +243,29 @@ Agent(model='gemini-3-flash-preview', tools=[search_products, get_product_detail
 ### UI 스타일 변경
 `frontend/src/components/` 폴더의 Vue 컴포넌트에서 스타일 수정
 
-## � Git 사용법
-
-### 첫 커밋 및 푸시
-
-```bash
-# Git 초기화 (아직 안했다면)
-git init
-
-# 모든 파일 스테이징
-git add .
-
-# 첫 커밋
-git commit -m "Initial commit: Fit-Finder agentic commerce"
-
-# GitHub 원격 저장소 연결
-git remote add origin https://github.com/your-username/fit-finder.git
-
-# 푸시
-git branch -M main
-git push -u origin main
-```
-
-### 주의사항
-- `.env` 파일은 `.gitignore`에 포함되어 있어 커밋되지 않습니다
-- Google API Key는 절대 Git에 올리지 마세요
-- `.env.example` 파일을 참고하여 각자 `.env` 파일을 생성하세요
-
-## �🐛 문제 해결
+## 🛠️ 문제 해결
 
 ### Backend 서버 오류
+
+**기본 체크리스트:**
 - Google API Key가 올바르게 설정되었는지 확인
 - `.env` 파일이 `backend/` 폴더에 있는지 확인
-- Python 패키지가 모두 설치되었는지 확인
+- Python 패키지가 모두 설치되었는지 확인 (`pip install -r requirements.txt`)
+
+**"No agent 'root_agent' found" 오류:**
+- ADK는 특정 디렉토리 구조를 요구합니다
+- `agent.py`와 `tools.py`가 **반드시** `backend/root_agent/` 디렉토리 안에 있어야 합니다
+- ❌ 잘못된 구조: `backend/agent.py`
+- ✅ 올바른 구조: `backend/root_agent/agent.py`
+- `server.py`의 `AGENT_DIR`은 `root_agent/` 폴더의 상위 디렉토리를 가리켜야 합니다
+
+**FastAPI 서버 설정:**
+- `server.py`에서 `google.adk.cli.fast_api.get_fast_api_app()`을 사용합니다
+- 이는 ADK의 공식 FastAPI 통합 방식으로, 세션 관리와 에이전트 실행을 자동으로 처리합니다
+- 직접 FastAPI 앱을 만들지 않고 ADK가 제공하는 앱을 사용하는 것이 권장됩니다
+- API 엔드포인트:
+  - 세션 생성: `POST /api/apps/{agent}/users/{user}/sessions`
+  - 메시지 전송: `POST /api/run`
 
 ### CORS 오류
 - Backend 서버가 8000 포트에서 실행 중인지 확인
@@ -285,13 +275,9 @@ git push -u origin main
 - Backend API가 정상 응답하는지 브라우저 콘솔 확인
 - Network 탭에서 API 호출 상태 확인
 
-## 📝 라이선스
-
-MIT License
-
 ## 👨‍💻 개발자
 
-Fit-Finder Team
+JIWAN SEO
 
 ---
 
