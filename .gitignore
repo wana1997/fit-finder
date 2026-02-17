@@ -30,6 +30,10 @@ env/
 .env.local
 .env.*.local
 
+# ADK (Agent Development Kit)
+.adk/
+*.db
+
 # IDEs
 .vscode/
 .idea/

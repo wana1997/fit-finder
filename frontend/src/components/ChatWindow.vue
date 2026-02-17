@@ -38,6 +38,7 @@ onMounted(async () => {
 
 // 메시지 전송
 const send = async () => {
+  console.log('test')
   if (!userInput.value.trim() || isLoading.value || !sessionId.value) return
 
   const message = userInput.value.trim()
