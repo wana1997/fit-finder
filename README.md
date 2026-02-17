@@ -67,6 +67,8 @@ fit-finder/
 
 ### 2. Backend 설정
 
+#### 옵션 A: 이 프로젝트를 클론한 경우 (권장)
+
 ```bash
 # backend 디렉토리로 이동
 cd backend
@@ -86,6 +88,29 @@ copy .env.example .env  # Windows
 # .env 파일을 열어서 Google API Key 입력
 # GOOGLE_API_KEY=your_actual_api_key_here
 ```
+
+#### 옵션 B: 처음부터 새로운 ADK 프로젝트 생성
+
+Google ADK 공식 문서: [ADK Get Started](https://google.github.io/adk-docs/get-started/python/)
+
+```bash
+# Google ADK 설치
+pip install google-adk
+
+# 새 에이전트 프로젝트 생성
+adk create root_agent
+
+# 생성된 프로젝트로 이동
+cd root_agent
+
+# agent.py와 tools.py를 이 프로젝트의 파일로 교체
+# 또는 직접 커스터마이징
+
+# 환경 변수 설정
+# GOOGLE_API_KEY를 환경 변수에 설정하거나 .env 파일 생성
+```
+
+**Note:** 이 프로젝트는 이미 `backend/root_agent/` 구조로 구성되어 있으므로, 클론한 경우 옵션 A만 따라하면 됩니다.
 
 ### 3. Frontend 설정
 
