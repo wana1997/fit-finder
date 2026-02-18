@@ -32,7 +32,7 @@ MOCK_PRODUCTS = [
         "category": "패딩",
         "color": "black",
         "price": 79000,
-        "image": "https://images.unsplash.com/photo-1548126032-079166fe3c39?w=400",
+        "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400",
         "description": "가볍고 휴대성 좋은 패딩"
     },
     {
@@ -108,16 +108,12 @@ def search_products(
     if min_price is not None:
         results = [p for p in results if p["price"] >= min_price]
     
-    # action과 data를 포함한 응답 구조
+    # 데이터만 반환
     import json
-    response = {
-        "action": "search_products",
-        "data": results
-    }
-    return json.dumps(response, ensure_ascii=False, indent=2)
+    return json.dumps(results, ensure_ascii=False, indent=2)
 
 
-def get_product_detail(product_id: int) -> str:
+def show_product_detail(product_id: int) -> str:
     """
     특정 상품의 상세 정보를 조회합니다.
     
@@ -125,23 +121,46 @@ def get_product_detail(product_id: int) -> str:
         product_id: 상품 ID
     
     Returns:
-        JSON 형식의 응답 (action과 data 포함)
+        JSON 형식의 상품 데이터 또는 에러 메시지
     """
     import json
     
     for product in MOCK_PRODUCTS:
         if product["id"] == product_id:
-            response = {
-                "action": "show_product_detail",
-                "data": product
-            }
-            return json.dumps(response, ensure_ascii=False, indent=2)
+            return json.dumps(product, ensure_ascii=False, indent=2)
     
     # 상품을 찾지 못한 경우
-    response = {
-        "action": "error",
-        "data": {"error": "상품을 찾을 수 없습니다.", "product_id": product_id}
-    }
-    return json.dumps(response, ensure_ascii=False, indent=2)
+    return json.dumps({"error": "상품을 찾을 수 없습니다.", "product_id": product_id}, ensure_ascii=False)
+
+
+def add_to_cart(product_id: int) -> str:
+    """
+    특정 상품을 장바구니에 추가합니다.
+    프론트엔드의 localStorage에 저장되도록 상품 정보를 반환합니다.
     
-    return json.dumps({"error": "상품을 찾을 수 없습니다."}, ensure_ascii=False)
+    Args:
+        product_id: 상품 ID
+    
+    Returns:
+        JSON 형식의 상품 데이터 또는 에러 메시지
+    """
+    import json
+    
+    for product in MOCK_PRODUCTS:
+        if product["id"] == product_id:
+            return json.dumps(product, ensure_ascii=False, indent=2)
+    
+    # 상품을 찾지 못한 경우
+    return json.dumps({"error": f"상품 ID {product_id}를 찾을 수 없습니다."}, ensure_ascii=False)
+
+
+def show_cart() -> str:
+    """
+    장바구니를 조회합니다.
+    프론트엔드의 localStorage에 저장된 데이터를 표시하도록 신호를 보냅니다.
+    
+    Returns:
+        JSON 형식의 메시지
+    """
+    import json
+    return json.dumps({"message": "장바구니 조회", "action_only": True}, ensure_ascii=False)
