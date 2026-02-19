@@ -34,7 +34,7 @@ export function useAgent() {
 
     try {
       // ADK API 호출
-      const aiMode = false
+      const aiMode = true
       let response = null
       
       if (aiMode) {
@@ -208,7 +208,7 @@ export function useAgent() {
       }
 
       return {
-        action: toolName === 'add_to_cart' ? 'add_cart' : toolName,
+        action: toolName,
         data: actionData,
         ment: ment,
         rawResponse: data

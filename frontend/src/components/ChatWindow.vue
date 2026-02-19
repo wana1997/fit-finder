@@ -22,7 +22,9 @@ const showSidebar = ref(true)
 
 // Agent composable 사용
 const { isLoading, createAgentSession, sendAgentMessage } = useAgent()
-const { cartItems, addToCart } = useCart()
+const { cartItems, addToCart, removeFromCart } = useCart()
+
+const cloneCartItems = () => cartItems.value.map(item => ({ ...item }))
 
 // 컴포넌트 마운트 시 세션 생성
 onMounted(async () => {
@@ -47,7 +49,6 @@ const send = async () => {
   if (!userInput.value.trim() || isLoading.value || !sessionId.value) return
 
   const message = userInput.value.trim()
-  const lowerMessage = message.toLowerCase()
   
   messages.value.push({
     role: 'user',
@@ -67,18 +68,32 @@ const send = async () => {
     const response = await sendAgentMessage(sessionId.value, message)
     console.log('response', response)
 
+    // add_to_cart 액션이면 localStorage에 저장
+    if (response.action === 'add_to_cart' && response.data) {
+      addToCart(response.data)
+    }
+
+    // delete_to_cart 액션이면 localStorage에서 제거
+    if (response.action === 'delete_to_cart' && response.data && !response.data.error) {
+      const productId = Number(response.data.id ?? response.data.product_id)
+      if (!Number.isNaN(productId)) {
+        removeFromCart(productId)
+      }
+    }
+
+    const displayData = ['show_cart', 'add_to_cart', 'delete_to_cart'].includes(response.action)
+      ? cloneCartItems()
+      : response.data
+
     messages.value.push({
       role: 'assistant',
       ment: response.ment,
       action: response.action,
-      data: response.action === 'show_cart' ? cartItems.value : response.data,
+      data: displayData,
       timestamp: new Date()
     })
 
-    // add_cart 액션이면 localStorage에 저장
-    if (response.action === 'add_cart' && response.data) {
-      addToCart(response.data)
-    }
+    scrollToBottom()
 
   } catch (error) {
     console.error('Error:', error)
@@ -197,11 +212,18 @@ const startNewChat = () => {
               </div>
 
               <!-- 장바구니 조회 -->
-              <CartDisplay v-else-if="msg.action === 'show_cart'" :items="cartItems" />
+              <CartDisplay v-else-if="msg.action === 'show_cart'" :items="msg.data || []" />
 
               <!-- 장바구니 추가 알림 -->
-              <div v-else-if="msg.action === 'add_cart'" class="cart-added-notification">
+              <div v-else-if="msg.action === 'add_to_cart'" class="cart-added-notification">
                 <p class="notification-text">✅ 장바구니에 추가되었습니다!</p>
+                <CartDisplay :items="msg.data || []" />
+              </div>
+
+              <!-- 장바구니 삭제 알림 -->
+              <div v-else-if="msg.action === 'delete_to_cart'" class="cart-removed-notification">
+                <p class="notification-text">🗑️ 장바구니에서 제거되었습니다!</p>
+                <CartDisplay :items="msg.data || []" />
               </div>
               
               <!-- 에러 메시지 -->
@@ -547,6 +569,20 @@ const startNewChat = () => {
 }
 
 .cart-added-notification p {
+  margin: 0;
+}
+
+.cart-removed-notification {
+  margin: 0;
+  padding: 0.75rem;
+  background: #fee2e2;
+  border-left: 4px solid #ef4444;
+  border-radius: 4px;
+  color: #991b1b;
+  font-size: 0.95rem;
+}
+
+.cart-removed-notification p {
   margin: 0;
 }
 

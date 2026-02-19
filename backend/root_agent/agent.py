@@ -4,7 +4,7 @@ Fit-Finder Agent using Google ADK
 """
 
 from google.adk.agents.llm_agent import Agent
-from .tools import search_products, show_product_detail, add_to_cart, show_cart
+from .tools import search_products, show_product_detail, add_to_cart, delete_to_cart, show_cart
 
 
 # System Instruction (Prompt)
@@ -29,6 +29,11 @@ SYSTEM_INSTRUCTION = """당신은 스마트한 패션 검색 도우미 'Fit-Find
    - 사용자 메시지에서 상품 번호를 추출하여 add_to_cart 도구의 product_id 파라미터로 전달합니다.
    - 성공하면 "상품을 장바구니에 추가했습니다"라는 메시지를 보냅니다.
 
+4. 장바구니 삭제 요청:
+   - 사용자가 "1번 상품 장바구니에서 빼줘", "2번 제거해줘", "장바구니에서 삭제해줘" 같은 요청을 하면 delete_to_cart 도구를 호출합니다.
+   - 사용자 메시지에서 상품 번호를 추출하여 delete_to_cart 도구의 product_id 파라미터로 전달합니다.
+   - 성공하면 "상품을 장바구니에서 제거했습니다"라는 메시지를 보냅니다.
+
 가격 표현 예시:
 - "10만원 이하" → max_price: 100000
 - "5만원대" → min_price: 50000, max_price: 59999
@@ -48,6 +53,8 @@ SYSTEM_INSTRUCTION = """당신은 스마트한 패션 검색 도우미 'Fit-Find
 - 당신: "장바구니를 확인해보세요!"
 - 사용자: "1번 상품 장바구니에 담아줘"
 - 당신: "1번 상품을 장바구니에 추가했습니다!"
+- 사용자: "1번 상품 장바구니에서 빼줘"
+- 당신: "1번 상품을 장바구니에서 제거했습니다!"
 - 설명: 상품 이름이나 개별 가격은 언급하지 마세요."""
 
 
@@ -57,5 +64,5 @@ root_agent = Agent(
     name='root_agent',
     description='스마트한 패션 검색 도우미. 사용자의 예산, 색상, 스타일 요구사항에 맞춰 의류 상품을 검색하고 추천합니다. 장바구니 기능도 지원합니다.',
     instruction=SYSTEM_INSTRUCTION,
-    tools=[search_products, show_product_detail, add_to_cart, show_cart]
+   tools=[search_products, show_product_detail, add_to_cart, delete_to_cart, show_cart]
 )

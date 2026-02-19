@@ -154,6 +154,26 @@ def add_to_cart(product_id: int) -> str:
     return json.dumps({"error": f"상품 ID {product_id}를 찾을 수 없습니다."}, ensure_ascii=False)
 
 
+def delete_to_cart(product_id: int) -> str:
+    """
+    특정 상품을 장바구니에서 제거합니다.
+    프론트엔드의 localStorage에서 해당 상품을 제거할 수 있도록 상품 식별 정보를 반환합니다.
+
+    Args:
+        product_id: 상품 ID
+
+    Returns:
+        JSON 형식의 상품 데이터 또는 에러 메시지
+    """
+    import json
+
+    for product in MOCK_PRODUCTS:
+        if product["id"] == product_id:
+            return json.dumps(product, ensure_ascii=False, indent=2)
+
+    return json.dumps({"error": f"상품 ID {product_id}를 찾을 수 없습니다."}, ensure_ascii=False)
+
+
 def show_cart() -> str:
     """
     장바구니를 조회합니다.
