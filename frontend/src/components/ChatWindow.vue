@@ -19,6 +19,7 @@ const userInput = ref('')
 const messagesContainer = ref(null)
 const sessionId = ref(null)
 const showSidebar = ref(true)
+const form = ref(null)
 
 // Agent composable 사용
 const { isLoading, createAgentSession, sendAgentMessage } = useAgent()
@@ -41,8 +42,6 @@ onMounted(async () => {
     })
   }
 })
-
-
 
 // 메시지 전송
 const send = async () => {
@@ -79,6 +78,11 @@ const send = async () => {
       if (!Number.isNaN(productId)) {
         removeFromCart(productId)
       }
+    }
+
+    if (response.action === 'init_payment' && response.data && !response.data.error) {
+      const paymentProducts = getPaymentProducts(response.data)
+      executeKcpPayment(paymentProducts)
     }
 
     const displayData = ['show_cart', 'add_to_cart', 'delete_to_cart'].includes(response.action)
@@ -137,10 +141,49 @@ const startNewChat = () => {
   ]
   userInput.value = ''
 }
+
+const getPaymentProducts = (actionData) => {
+  if (!actionData) return []
+  if (Array.isArray(actionData)) return actionData
+  if (Array.isArray(actionData.products)) return actionData.products
+  if (actionData.product) return [actionData.product]
+  if (actionData.id && actionData.name && actionData.price) return [actionData]
+  return []
+}
+
+const executeKcpPayment = (products) => {
+  if (!form.value || !products.length) return
+
+  const goodName = products.map(product => product.name).join(',')
+  const goodMny = products.reduce((sum, product) => sum + Number(product.price || 0), 0)
+
+  const goodNameInput = form.value.querySelector('input[name="good_name"]')
+  const goodMnyInput = form.value.querySelector('input[name="good_mny"]')
+
+  if (goodNameInput) goodNameInput.value = goodName
+  if (goodMnyInput) goodMnyInput.value = String(goodMny)
+
+  if (typeof window.KCP_Pay_Execute_Web === 'function') {
+    window.KCP_Pay_Execute_Web(form.value)
+  } else {
+    console.error('KCP_Pay_Execute_Web 함수가 로드되지 않았습니다.')
+  }
+}
 </script>
 
 <template>
   <div class="chat-wrapper">
+    <!-- KCP 결제창 전달 정보 -->
+    <form name="order_info" method="post" action="/" ref="form">
+      <input type="hidden" name="site_cd" value="T0000">
+      <input type="hidden" name="site_name" value="TEST SITE">
+      <input type="hidden" name="pay_method" value="100000000000">
+      <input type="hidden" name="ordr_idxx" value="TEST123456789">
+      <input type="hidden" name="good_name" value="운동화">
+      <input type="hidden" name="good_cd" value="00">
+      <input type="hidden" name="good_mny" value="1000">
+      <input type="hidden" name="payco_direct" value="Y">
+    </form>
     <!-- 사이드바 -->
     <aside class="sidebar" :class="{ collapsed: !showSidebar }">
       <div class="sidebar-header">
@@ -224,6 +267,11 @@ const startNewChat = () => {
               <div v-else-if="msg.action === 'delete_to_cart'" class="cart-removed-notification">
                 <p class="notification-text">🗑️ 장바구니에서 제거되었습니다!</p>
                 <CartDisplay :items="msg.data || []" />
+              </div>
+
+              <!-- 결제 초기화 안내 -->
+              <div v-else-if="msg.action === 'init_payment'" class="payment-notification">
+                <p class="notification-text">💳 해당 상품 결제를 위해 PAYCO 결제창을 띄워드리겠습니다.</p>
               </div>
               
               <!-- 에러 메시지 -->
@@ -583,6 +631,20 @@ const startNewChat = () => {
 }
 
 .cart-removed-notification p {
+  margin: 0;
+}
+
+.payment-notification {
+  margin: 0;
+  padding: 0.75rem;
+  background: #e0f2fe;
+  border-left: 4px solid #0284c7;
+  border-radius: 4px;
+  color: #075985;
+  font-size: 0.95rem;
+}
+
+.payment-notification p {
   margin: 0;
 }
 

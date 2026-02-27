@@ -174,6 +174,40 @@ def delete_to_cart(product_id: int) -> str:
     return json.dumps({"error": f"상품 ID {product_id}를 찾을 수 없습니다."}, ensure_ascii=False)
 
 
+def init_payment(product_ids: List[int]) -> str:
+    """
+    결제 대상 상품 정보를 초기화합니다.
+    프론트엔드에서 결제창 호출에 사용할 수 있도록 상품 목록 정보를 반환합니다.
+
+    Args:
+        product_ids: 결제할 상품 ID 목록
+
+    Returns:
+        JSON 형식의 결제 대상 상품 정보 또는 에러 메시지
+    """
+    import json
+
+    if not product_ids:
+                return json.dumps({"error": "결제할 상품 ID가 없습니다."}, ensure_ascii=False)
+
+    selected_products = [
+        product for product in MOCK_PRODUCTS
+        if product["id"] in product_ids
+    ]
+
+    if not selected_products:
+                return json.dumps({"error": "결제할 상품을 찾을 수 없습니다.", "product_ids": product_ids}, ensure_ascii=False)
+
+    return json.dumps(
+        {
+            "products": selected_products,
+            "product_ids": product_ids
+        },
+        ensure_ascii=False,
+        indent=2
+    )
+
+
 def show_cart() -> str:
     """
     장바구니를 조회합니다.
